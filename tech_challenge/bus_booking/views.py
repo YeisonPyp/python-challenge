@@ -1,7 +1,13 @@
 from rest_framework import status, generics
 from rest_framework.response import Response
 from .models import Bus, Customer, TravelDetail, Reservation
-from .serializers import BusSerializer, CustomerSerializer, TravelDetailSerializer, ReservationSerializer
+from .serializers import (
+    BusSerializer,
+    CustomerSerializer,
+    TravelDetailSerializer,
+    ReservationSerializer,
+    TravelDetailUpdateAvailableSeatsSerializer,
+    BookingSerializer)
 
 
 # Bus Views
@@ -161,6 +167,13 @@ class TravelDetailCreateView(generics.CreateAPIView):
     serializer_class = TravelDetailSerializer
 
     def create_travel_detail(self, data):
+        try:
+            bus = Bus.objects.get(bus_id=data['bus_id'])
+        except Bus.DoesNotExist:
+            return Response({'success':False, 'detail':'No item found'}, status=status.HTTP_404_NOT_FOUND)
+
+        data['available_seats'] = bus.seating_capacity
+
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -174,6 +187,7 @@ class TravelDetailCreateView(generics.CreateAPIView):
         if 'travel_detail_id' in travel_detail :
             return Response({'success':True, 'detail':'Successfully created', 'data':travel_detail}, status=status.HTTP_201_CREATED)
         return Response({'success':False, 'detail':'Invalid data provided', 'data': travel_detail}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class TravelDetailRetrieveView(generics.RetrieveAPIView):
     serializer_class = TravelDetailSerializer
@@ -205,7 +219,36 @@ class TravelDetailUpdateView(generics.UpdateAPIView):
             return Response({'success':True, 'detail':'Successfully modified', 'data': serializer.data}, status=status.HTTP_201_CREATED)
         
         return Response({'success':False, 'detail':'Invalid data provided', 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+class TravelDetailUpdateAvailableSeatsView(generics.UpdateAPIView):
+    serializer_class = TravelDetailUpdateAvailableSeatsSerializer
+
+    def update_available_seats(self, data):
+        try:
+            travel_detail = TravelDetail.objects.get(travel_detail_id=data['travel_detail_id'])
+        
+        except TravelDetail.DoesNotExist:
+            return Response({'success':False, 'detail':'No item found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if data['available_seats'] < 0:
+            return Response({'success':False, 'detail':'Invalid data provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        travel_detail.available_seats = data['available_seats']
+        travel_detail.save()
+        return travel_detail
+
+    def put(self, request):
+
+        travel_detail = self.update_available_seats(request.data)
+        
+        serializer = self.serializer_class(travel_detail, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'success':True, 'detail':'Successfully modified', 'data': serializer.data}, status=status.HTTP_200_OK)
+        
+        return Response({'success':False, 'detail':'Invalid data provided', 'data': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class TravelDetailDeleteView(generics.DestroyAPIView):
     serializer_class = TravelDetailSerializer
@@ -224,7 +267,7 @@ class TravelDetailDeleteView(generics.DestroyAPIView):
 # Reservation Views
 
 class ReservationListView(generics.ListAPIView):
-    serializer_class = ReservationSerializer
+    serializer_class = BookingSerializer
 
     def get(self, request):
         reservations = Reservation.objects.all()
@@ -236,6 +279,25 @@ class ReservationCreateView(generics.CreateAPIView):
     serializer_class = ReservationSerializer
 
     def create_reservation(self, data):
+
+        customer = Customer.objects.filter(name=data['name'], email = data['email']).first()
+
+        if not customer:
+            instance_customer = CustomerCreateView()
+            customer = instance_customer.create_customer(data)
+
+        try:
+            travel_detail = TravelDetail.objects.get(travel_detail_id=data['travel_detail_id'])
+        except TravelDetail.DoesNotExist:
+            return Response({'success':False, 'detail':'No item found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if travel_detail.available_seats < 1:
+            return Response({'success':False, 'detail':'No available seats'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        instance_travel_detail = TravelDetailUpdateAvailableSeatsView()
+        data_seats = {'travel_detail_id':data['travel_detail_id'], 'available_seats':travel_detail.available_seats -1}
+        travel_detail = instance_travel_detail.update_available_seats(data_seats)
+
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -251,7 +313,7 @@ class ReservationCreateView(generics.CreateAPIView):
     
 
 class ReservationRetrieveView(generics.RetrieveAPIView):
-    serializer_class = ReservationSerializer
+    serializer_class = BookingSerializer
 
     def get(self, request, id):
         try:

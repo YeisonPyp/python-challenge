@@ -39,6 +39,7 @@ urlpatterns = [
     path('travel-detail-list/get/', views.TravelDetailListView.as_view(),name='get-travel'),
     path('travel-detail-id/get/<str:id>/', views.TravelDetailRetrieveView.as_view(),name='travel-id-travel'),
     path('travel-detail/update/<str:id>/', views.TravelDetailUpdateView.as_view(),name='travel-update'),
+    path('travel-detail/update-available-seats/', views.TravelDetailUpdateAvailableSeatsView.as_view(),name='travel-update-available-seats'),
     path('travel-detail/delete/<str:id>/', views.TravelDetailDeleteView.as_view(),name='travel-delete'),
     
     # RESERVATION

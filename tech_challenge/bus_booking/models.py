@@ -12,7 +12,7 @@ class Bus(models.Model):
 
 class TravelDetail(models.Model):
     travel_detail_id = models.AutoField(primary_key=True)
-    bus = models.ForeignKey(Bus, on_delete=models.CASCADE)
+    bus_id = models.ForeignKey(Bus, on_delete=models.CASCADE)
     origin = models.CharField(max_length=255)
     destination = models.CharField(max_length=255)
     departure_date = models.DateField()
@@ -35,8 +35,8 @@ class Customer(models.Model):
 
 class Reservation(models.Model):
     reservation_id = models.AutoField(primary_key=True)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    travel_detail = models.ForeignKey(TravelDetail, on_delete=models.CASCADE)
+    customer_id = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    travel_detail_id = models.ForeignKey(TravelDetail, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"Reservation #{self.reservation_id} - Customer: {self.customer.name}, Travel: {self.travel_detail.origin} to {self.travel_detail.destination}"
