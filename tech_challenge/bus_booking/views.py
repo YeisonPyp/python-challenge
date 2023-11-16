@@ -298,6 +298,8 @@ class ReservationCreateView(generics.CreateAPIView):
         data_seats = {'travel_detail_id':data['travel_detail_id'], 'available_seats':travel_detail.available_seats -1}
         travel_detail = instance_travel_detail.update_available_seats(data_seats)
 
+        data['customer_id'] = customer['customer_id']
+
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
             serializer.save()
