@@ -19,6 +19,19 @@ from bus_booking import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('bus-booking/get/', views.BusListView.as_view(),name='get-bus'),
-    # path('bus_booking/', include('bus_booking.urls')),
+
+    # BUS
+    path('bus/create/', views.BusCreateView.as_view(),name='bus-create'),
+    path('bus-list/get/', views.BusListView.as_view(),name='get-bus'),
+    path('bus-id/get/<str:id>/', views.BusRetrieveView.as_view(),name='bus-id-bus'),
+    path('bus/update/<str:id>/', views.BusUpdateView.as_view(),name='bus-update'),
+    path('bus/delete/<str:id>/', views.BusDeleteView.as_view(),name='bus-delete'),
+    
+    # CUSTOMER
+    path('customer/create/', views.CustomerCreateView.as_view(),name='customer-create'),
+    path('customer-list/get/', views.CustomerListView.as_view(),name='get-customer'),
+
+    
+
+
 ]
