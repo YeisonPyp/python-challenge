@@ -286,19 +286,25 @@ class ReservationCreateView(generics.CreateAPIView):
             instance_customer = CustomerCreateView()
             customer = instance_customer.create_customer(data)
 
-        try:
-            travel_detail = TravelDetail.objects.get(travel_detail_id=data['travel_detail_id'])
-        except TravelDetail.DoesNotExist:
-            return Response({'success':False, 'detail':'No item found'}, status=status.HTTP_404_NOT_FOUND)
+        travel_detail_search = TravelDetail.objects.filter(origin=data['origin'], destination=data['destination'], departure_date=data['departure_date']).first()
+
+        data['bus_id'] = 1
+
+        if not travel_detail_search:
+            instance_travel_detail = TravelDetailCreateView()
+            travel_detail_new = instance_travel_detail.create_travel_detail(data)
+
+        travel_detail = TravelDetail.objects.get(travel_detail_new['travel_detail_id'])
+
+        data['travel_detail_id'] = travel_detail.travel_detail_id
+        data['customer_id'] = customer['customer_id']
 
         if travel_detail.available_seats < 1:
             return Response({'success':False, 'detail':'No available seats'}, status=status.HTTP_400_BAD_REQUEST)
         
         instance_travel_detail = TravelDetailUpdateAvailableSeatsView()
-        data_seats = {'travel_detail_id':data['travel_detail_id'], 'available_seats':travel_detail.available_seats -1}
+        data_seats = {'travel_detail_id':data['travel_detail_id'], 'available_seats':travel_detail.available_seats-1}
         travel_detail = instance_travel_detail.update_available_seats(data_seats)
-
-        data['customer_id'] = customer['customer_id']
 
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
