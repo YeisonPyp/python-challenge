@@ -30,8 +30,23 @@ urlpatterns = [
     # CUSTOMER
     path('customer/create/', views.CustomerCreateView.as_view(),name='customer-create'),
     path('customer-list/get/', views.CustomerListView.as_view(),name='get-customer'),
+    path('customer-id/get/<str:id>/', views.CustomerRetrieveView.as_view(),name='customer-id-customer'),
+    path('customer/update/<str:id>/', views.CustomerUpdateView.as_view(),name='customer-update'),
+    path('customer/delete/<str:id>/', views.CustomerDeleteView.as_view(),name='customer-delete'),
 
+    # TRAVEL
+    path('travel-detail/create/', views.TravelDetailCreateView.as_view(),name='travel-create'),
+    path('travel-detail-list/get/', views.TravelDetailListView.as_view(),name='get-travel'),
+    path('travel-detail-id/get/<str:id>/', views.TravelDetailRetrieveView.as_view(),name='travel-id-travel'),
+    path('travel-detail/update/<str:id>/', views.TravelDetailUpdateView.as_view(),name='travel-update'),
+    path('travel-detail/delete/<str:id>/', views.TravelDetailDeleteView.as_view(),name='travel-delete'),
     
-
+    # RESERVATION
+    path('reservation/create/', views.ReservationCreateView.as_view(),name='reservation-create'),
+    path('reservation-list/get/', views.ReservationListView.as_view(),name='get-reservation'),
+    path('reservation-id/get/<str:id>/', views.ReservationRetrieveView.as_view(),name='reservation-id-reservation'),
+    path('reservation/update/<str:id>/', views.ReservationUpdateView.as_view(),name='reservation-update'),
+    path('reservation/delete/<str:id>/', views.ReservationDeleteView.as_view(),name='reservation-delete'),
+    
 
 ]
